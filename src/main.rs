@@ -1,8 +1,12 @@
 use std::env;
-use std::net::IpAddr;
-use std::os::unix::process;
+use std::io::{self, Write};
+use std::net::{IpAddr, TcpStream};
+use std::process;
 use std::str::FromStr;
+use std::sync::mpsc::{channel, Sender};
+use std::thread;
 
+#[derive(Debug)]
 struct Arguments {
     flag: String,
     ipaddr: IpAddr,
@@ -29,8 +33,8 @@ impl Arguments {
             let flag = args[1].clone();
             if flag.contains("-h") || flag.contains("-help") && args.len() == 2 {
                 println!(
-                    "Usage: -j to select how many threads you want
-        \r\n       -h or -help to show this help message"
+                    "Usage: -j to select how many threads you want \
+                    \r\n       -h or -help to show this help message"
                 );
                 return Err("help");
             } else if flag.contains("-h") || flag.contains("-help") {
@@ -59,14 +63,14 @@ impl Arguments {
 fn main() {
     let args: Vec<String> = env::args().collect();
     let program = args[0].clone();
-    let arguments = Arguments::new(&args).unwrap_or_else(
-      |err| {
+    let arguments = Arguments::new(&args).unwrap_or_else(|err| {
         if err.contains("help") {
-          process::exit(0);
+            process::exit(0);
         } else {
-          eprint!("{} problem parsing arguments: {}", program, err);
-          process::exit(0);
+            eprintln!("{} problem parsing arguments: {}", program, err);
+            process::exit(0);
         }
-      }
-    );
+    });
+
+    println!("args: {:?}", arguments);
 }
